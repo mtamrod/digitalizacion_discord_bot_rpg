@@ -6,6 +6,11 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Mensaje cuando el bot se conecta
+@bot.event
+async def on_ready():
+    print(f"Bot conectado como {bot.user}")
+
 class RPGView(discord.ui.View):
     @discord.ui.button(label="Explorar", style=discord.ButtonStyle.primary, custom_id="explorar_button")
     async def explorar(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -24,13 +29,44 @@ class RPGView(discord.ui.View):
     async def salir(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message("Gracias por jugar!", ephemeral=True)
 
-@bot.event
-async def on_ready():
-    print(f"Bot conectado como {bot.user}")
-
+# TODO: Añadir una introducción al bot
 @bot.command()
 async def start(ctx):
     view = RPGView()
     await ctx.send("yepa ya estoy por aqui. que tu quiere ase manito?", view=view)
 
-bot.run('eltokenvaaquichato')
+class ItemMenu(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(
+                label="Tenedor de plástico",
+                description="Te puede sacar de algún apuro",
+                emoji="🍴"
+            ),
+            discord.SelectOption(
+                label="Poción de veneno",
+                description="Solo apto para cobardes",
+                emoji="☠️"
+            ),
+            discord.SelectOption(
+                label="Hacha legendario de juguete",
+                description="Algo es algo, ¿supongo?",
+                emoji="🪓"
+            )
+        ]
+
+        super().__init__(placeholder="Selecciona un item: ", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f"Increíble! {self.values[0]} es una puta mierda, pero es tu puta mierda!")
+
+class ItemMenuView(discord.ui.View):
+    def __init__(self, *items, timeout=None):
+        super().__init__(*items, timeout=timeout)
+        self.add_item(ItemMenu())
+
+@bot.command()
+async def shop(ctx):
+    await ctx.send("Selecciona un item:", view=ItemMenuView())
+
+bot.run('chatoeltokenvaaqui(danimaricon)')
